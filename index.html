@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f6f5ef">
+  <meta name="description" content="Check Dash: a personal dashboard for Chiang Mai and Yangon.">
+  <title>Check Dash</title>
+  <style>
+    /* CSS controls the colours, spacing, and layout of the page. */
+    :root { --ink: #183e38; --muted: #556a63; --paper: #f6f5ef; }
+    * { box-sizing: border-box; }
+    body { margin: 0; background: var(--paper); color: var(--ink); font-family: Arial, Helvetica, sans-serif; }
+    button { font: inherit; color: inherit; cursor: pointer; }
+    button:focus-visible { outline: 3px solid #1b6557; outline-offset: 5px; }
+    [hidden] { display: none !important; }
+    .shell { max-width: 1120px; padding: 0 32px; margin: 0 auto; }
+    header { display: flex; align-items: center; justify-content: space-between; gap: 20px; padding: 30px 0; border-bottom: 1px solid #d9dfd4; }
+    .brand { display: flex; align-items: center; gap: 11px; font-size: 24px; font-weight: 800; letter-spacing: -1px; }
+    .brand-mark { display: grid; grid-template-columns: repeat(2, 9px); gap: 3px; transform: rotate(-8deg); }
+    .brand-mark i { width: 9px; height: 9px; border-radius: 2px; background: #db7444; }
+    .brand-mark i:last-child { background: var(--ink); }
+    .cities { font-size: 13px; color: var(--muted); letter-spacing: .25px; }
+    .hero { display: flex; align-items: center; justify-content: space-between; gap: 30px; padding: 65px 0 44px; }
+    .eyebrow { margin: 0 0 17px; font-size: 12px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; }
+    h1 { margin: 0; font-size: clamp(42px, 6.3vw, 76px); line-height: 1.05; letter-spacing: -3.5px; font-weight: 500; }
+    .date { margin: 23px 0 0; font-size: 18px; line-height: 1.5; }
+    .timezone { margin: 7px 0 0; color: var(--muted); font-size: 13px; }
+    /* This sun is decoration only; it does not represent the weather. */
+    .sun-art { width: 160px; height: 160px; flex-shrink: 0; border: 1px solid #d9c3a0; border-radius: 50%; display: grid; place-items: center; position: relative; margin-right: 22px; }
+    .sun-art::before { content: ''; width: 110px; height: 110px; border-radius: 50%; background: #efb568; box-shadow: 0 0 0 14px #efb56822; }
+    .sun-art::after { content: ''; width: 17px; height: 17px; border-radius: 50%; position: absolute; top: 10px; right: 16px; background: #dc764d; border: 5px solid var(--paper); box-sizing: content-box; }
+    .section-caption { margin: 0 0 17px; color: var(--muted); font-size: 15px; }
+    .cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; }
+    .card { border: 1px solid #233c3012; border-radius: 22px; padding: 25px; min-height: 242px; text-align: left; display: flex; flex-direction: column; transition: transform .18s ease, box-shadow .18s ease; }
+    .card:hover { transform: translateY(-4px); box-shadow: 0 12px 20px #243f3010; }
+    .weather { background: #fae8c8; }
+    .time { background: #dfece3; }
+    .currency { background: #e9e4f4; }
+    .card-top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 32px; }
+    .icon { width: 42px; height: 42px; stroke: currentColor; stroke-width: 1.65; fill: none; stroke-linecap: round; stroke-linejoin: round; }
+    .number { font-size: 12px; opacity: .7; }
+    .card-title { font-size: 29px; font-weight: 600; letter-spacing: -1px; margin-bottom: 8px; }
+    .card-bottom { display: flex; justify-content: space-between; align-items: center; gap: 10px; }
+    .card-description { font-size: 14px; line-height: 1.6; }
+    .arrow { font-size: 26px; }
+    footer { margin-top: 50px; padding: 23px 0 28px; border-top: 1px solid #d9dfd4; display: flex; justify-content: space-between; gap: 16px; color: var(--muted); font-size: 12px; line-height: 1.6; }
+    .detail { padding-top: 33px; }
+    .back { border: 1px solid #d0d9ce; border-radius: 30px; background: transparent; padding: 12px 18px; font-size: 14px; }
+    .detail h2 { font-size: clamp(36px, 6vw, 56px); font-weight: 500; letter-spacing: -2px; margin: 36px 0 12px; }
+    .detail-intro { color: var(--muted); line-height: 1.65; margin: 0 0 26px; max-width: 620px; }
+    .preview-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 18px; }
+    .preview-card { border-radius: 20px; padding: 28px; }
+    .preview-card h3 { font-size: 24px; font-weight: 600; margin: 0 0 8px; }
+    .preview-card p { margin: 0; font-size: 14px; line-height: 1.7; }
+    .empty-value { display: block; margin: 22px 0 12px; font-size: 38px; }
+    .practice-note { background: white; border: 1px solid #dbe2d7; border-radius: 14px; padding: 17px 20px; margin-top: 22px; line-height: 1.7; font-size: 14px; }
+    .conversion { padding: 15px 0; font-size: 19px; border-bottom: 1px solid #233c301c; display: flex; justify-content: space-between; gap: 12px; }
+    .conversion:last-child { border-bottom: 0; }
+    @media (max-width: 700px) {
+      .shell { padding: 0 22px; }
+      header { padding: 22px 0; flex-wrap: wrap; gap: 12px; }
+      .brand { font-size: 22px; }
+      .cities { font-size: 12px; }
+      .hero { padding: 42px 0 30px; }
+      h1 { letter-spacing: -2px; }
+      .sun-art { display: none; }
+      .date { font-size: 16px; margin-top: 18px; }
+      .cards { grid-template-columns: 1fr; gap: 14px; }
+      .card { min-height: 180px; padding: 22px; }
+      .card-top { margin-bottom: 19px; }
+      .card-title { font-size: 27px; }
+      .icon { width: 33px; height: 33px; }
+      .preview-grid { grid-template-columns: 1fr; }
+      footer { margin-top: 34px; flex-direction: column; gap: 5px; }
+    }
+    @media (prefers-reduced-motion: reduce) { .card { transition: none; } .card:hover { transform: none; } }
+  </style>
+</head>
+<body>
+  <!-- HTML contains the page's headings, buttons, and content. -->
+  <div class="shell">
+    <header>
+      <div class="brand"><span class="brand-mark" aria-hidden="true"><i></i><i></i><i></i><i></i></span>Check Dash</div>
+      <div class="cities">Chiang Mai &nbsp;·&nbsp; Yangon</div>
+    </header>
+    <main>
+      <noscript><p>Please enable JavaScript to use Check Dash.</p></noscript>
+      <section id="home" class="view" aria-labelledby="greeting">
+        <div class="hero">
+          <div>
+            <p class="eyebrow">Your daily check-in</p>
+            <h1 id="greeting" tabindex="-1">Welcome</h1>
+            <p id="today" class="date"></p>
+            <p class="timezone">Greeting and date follow Chiang Mai time.</p>
+          </div>
+          <div class="sun-art" aria-hidden="true"></div>
+        </div>
+        <p class="section-caption">What would you like to check?</p>
+        <!-- Each button opens a different section without loading another file. -->
+        <nav class="cards" aria-label="Dashboard features">
+          <button class="card weather" data-view="weather" aria-controls="weather" aria-label="Open Weather">
+            <span class="card-top"><svg class="icon" viewBox="0 0 40 40" aria-hidden="true"><circle cx="15" cy="14" r="6"/><path d="M15 2v3M15 23v3M3 14H1M26 14h3M6 5l2 2M23 5l-2 2M7 22l-2 2M12 32h18a6 6 0 0 0 0-12 9 9 0 0 0-17-1 6.5 6.5 0 0 0-1 13Z"/></svg><span class="number">01</span></span>
+            <span class="card-title">Weather</span>
+            <span class="card-bottom"><span class="card-description">Today &amp; tomorrow<br>Chiang Mai and Yangon</span><span class="arrow" aria-hidden="true">↗</span></span>
+          </button>
+          <button class="card time" data-view="time" aria-controls="time" aria-label="Open Time">
+            <span class="card-top"><svg class="icon" viewBox="0 0 40 40" aria-hidden="true"><circle cx="20" cy="20" r="16"/><path d="M20 10v11l8 5M20 4v2M36 20h-2M20 36v-2M4 20h2"/></svg><span class="number">02</span></span>
+            <span class="card-title">Time</span>
+            <span class="card-bottom"><span class="card-description">Two cities<br>One moment</span><span class="arrow" aria-hidden="true">↗</span></span>
+          </button>
+          <button class="card currency" data-view="currency" aria-controls="currency" aria-label="Open Currency">
+            <span class="card-top"><svg class="icon" viewBox="0 0 40 40" aria-hidden="true"><path d="M6 13h27l-6-6M34 27H7l6 6M6 13l5 5M34 27l-5-5"/><circle cx="20" cy="20" r="4"/></svg><span class="number">03</span></span>
+            <span class="card-title">Currency</span>
+            <span class="card-bottom"><span class="card-description">Dollars, baht &amp; kyat<br>Everyday conversions</span><span class="arrow" aria-hidden="true">↗</span></span>
+          </button>
+        </nav>
+      </section>
+
+      <!-- These panels are ready for the next practice stages. No data is invented. -->
+      <section id="weather" class="view detail" aria-labelledby="weather-title" hidden>
+        <button class="back" data-view="home">← Back to Home</button>
+        <h2 id="weather-title" tabindex="-1">Weather</h2>
+        <p class="detail-intro">A look at today, with a little planning for tomorrow.</p>
+        <div class="preview-grid">
+          <article class="preview-card weather"><h3>Chiang Mai</h3><p>Current city</p><span class="empty-value">—</span><p>Current conditions and tomorrow’s forecast will appear here.</p></article>
+          <article class="preview-card weather"><h3>Yangon</h3><p>Hometown</p><span class="empty-value">—</span><p>Current conditions and tomorrow’s forecast will appear here.</p></article>
+        </div>
+        <p class="practice-note">This is the first practice version. We will connect weather data in the weather lesson.</p>
+      </section>
+
+      <section id="time" class="view detail" aria-labelledby="time-title" hidden>
+        <button class="back" data-view="home">← Back to Home</button>
+        <h2 id="time-title" tabindex="-1">Time</h2>
+        <p class="detail-intro">Two places that matter, together on one screen.</p>
+        <div class="preview-grid">
+          <article class="preview-card time"><h3>Chiang Mai</h3><p>Thailand</p><span class="empty-value">—</span><p>The Chiang Mai clock will appear here.</p></article>
+          <article class="preview-card time"><h3>Yangon</h3><p>Myanmar</p><span class="empty-value">—</span><p>The Yangon clock will appear here.</p></article>
+        </div>
+        <p class="practice-note">Next practice step: add both clocks and make them update every second.</p>
+      </section>
+
+      <section id="currency" class="view detail" aria-labelledby="currency-title" hidden>
+        <button class="back" data-view="home">← Back to Home</button>
+        <h2 id="currency-title" tabindex="-1">Currency</h2>
+        <p class="detail-intro">Your four everyday conversions, in one place.</p>
+        <div class="preview-card currency">
+          <div class="conversion"><span>1 USD → THB</span><span>—</span></div>
+          <div class="conversion"><span>1 USD → MMK</span><span>—</span></div>
+          <div class="conversion"><span>1,000 THB → MMK</span><span>—</span></div>
+          <div class="conversion"><span>100,000 MMK → THB</span><span>—</span></div>
+        </div>
+        <p class="practice-note">We will add the exchange-rate connection and calculations in the currency lesson.</p>
+      </section>
+    </main>
+    <footer><span>A little closer to home.</span><span>Check Dash &nbsp;·&nbsp; First practice version</span></footer>
+  </div>
+  <script>
+    // JavaScript makes the greeting, date, and navigation work.
+    // Bangkok is the standard time-zone identifier for Chiang Mai's time zone.
+    const greetingTimeZone = 'Asia/Bangkok';
+    const hourFormatter = new Intl.DateTimeFormat('en-GB', {
+      timeZone: greetingTimeZone, hour: 'numeric', hourCycle: 'h23'
+    });
+    const dateFormatter = new Intl.DateTimeFormat('en-GB', {
+      timeZone: greetingTimeZone, weekday: 'long', day: 'numeric', month: 'long', year: 'numeric'
+    });
+
+    // Before noon: morning. Noon to 17:59: afternoon. From 18:00: evening.
+    function updateGreeting(now = new Date()) {
+      const hour = Number(hourFormatter.format(now));
+      let message = 'Good Evening';
+      if (hour < 12) message = 'Good Morning';
+      else if (hour < 18) message = 'Good Afternoon';
+      document.getElementById('greeting').textContent = message;
+      document.getElementById('today').textContent = dateFormatter.format(now);
+    }
+
+    // Show only the selected section. The other sections stay hidden.
+    let lastFeature = 'weather';
+    function showView(viewName) {
+      const selectedView = document.getElementById(viewName);
+      if (!selectedView || !selectedView.classList.contains('view')) return;
+      document.querySelectorAll('.view').forEach(view => {
+        view.hidden = view.id !== viewName;
+      });
+      if (viewName === 'home') {
+        document.querySelector('.card[data-view="' + lastFeature + '"]').focus({ preventScroll: true });
+      } else {
+        lastFeature = viewName;
+        selectedView.querySelector('h2').focus({ preventScroll: true });
+      }
+      window.scrollTo(0, 0);
+    }
+
+    // Read each button's data-view value when it is clicked.
+    document.querySelectorAll('[data-view]').forEach(button => {
+      button.addEventListener('click', () => showView(button.dataset.view));
+    });
+
+    updateGreeting();
+    // Keep the greeting and date correct if the page stays open past noon or midnight.
+    setInterval(updateGreeting, 1000);
+    document.addEventListener('visibilitychange', () => {
+      if (!document.hidden) updateGreeting();
+    });
+  </script>
+</body>
+</html>
