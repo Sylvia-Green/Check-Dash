@@ -53,9 +53,24 @@
     .preview-card { border-radius: 20px; padding: 28px; }
     .preview-card h3 { font-size: 24px; font-weight: 600; margin: 0 0 8px; }
     .preview-card p { margin: 0; font-size: 14px; line-height: 1.7; }
-    .empty-value { display: block; margin: 22px 0 12px; font-size: 38px; }
+    .reading { display: block; margin: 22px 0 8px; font-size: clamp(38px, 5vw, 56px); letter-spacing: -2px; font-variant-numeric: tabular-nums; }
+    .clock { font-size: clamp(34px, 5vw, 52px); }
+    .forecast { border-top: 1px solid #233c3025; margin-top: 24px; padding-top: 21px; }
+    .forecast h4 { margin: 0 0 8px; font-size: 18px; }
+    .forecast .range { margin: 10px 0 4px; font-size: 18px; font-weight: 600; }
+    .preview-card .small, .small { color: var(--muted); font-size: 12px; line-height: 1.7; }
+    .preview-card .weather-stamp { margin-top: 12px; }
+    .actions { display: flex; align-items: center; flex-wrap: wrap; gap: 12px; margin: 24px 0 12px; }
+    .refresh { border: 0; background: var(--ink); color: white; padding: 12px 18px; border-radius: 24px; font-size: 14px; min-height: 44px; }
+    button:disabled { cursor: wait; opacity: .65; }
+    .status { margin: 0; font-size: 13px; line-height: 1.6; }
+    .preview-card .status { margin-top: 14px; }
+    .status[data-state="error"] { color: #813717; font-weight: 600; }
+    .preview-card .rate-heading { font-size: 17px; margin-bottom: 5px; }
+    a { color: inherit; text-underline-offset: 3px; }
     .practice-note { background: white; border: 1px solid #dbe2d7; border-radius: 14px; padding: 17px 20px; margin-top: 22px; line-height: 1.7; font-size: 14px; }
-    .conversion { padding: 15px 0; font-size: 19px; border-bottom: 1px solid #233c301c; display: flex; justify-content: space-between; gap: 12px; }
+    .conversion { padding: 19px 0; font-size: 19px; border-bottom: 1px solid #233c301c; display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+    .conversion strong { font-variant-numeric: tabular-nums; }
     .conversion:last-child { border-bottom: 0; }
     @media (max-width: 700px) {
       .shell { padding: 0 22px; }
@@ -72,6 +87,8 @@
       .card-title { font-size: 27px; }
       .icon { width: 33px; height: 33px; }
       .preview-grid { grid-template-columns: 1fr; }
+      .preview-card { padding: 23px; }
+      .conversion { font-size: 17px; }
       footer { margin-top: 34px; flex-direction: column; gap: 5px; }
     }
     @media (prefers-reduced-motion: reduce) { .card { transition: none; } .card:hover { transform: none; } }
@@ -117,16 +134,41 @@
         </nav>
       </section>
 
-      <!-- These panels are ready for the next practice stages. No data is invented. -->
+      <!-- JavaScript fills these placeholders with API responses or the city clocks. -->
       <section id="weather" class="view detail" aria-labelledby="weather-title" hidden>
         <button class="back" data-view="home">← Back to Home</button>
         <h2 id="weather-title" tabindex="-1">Weather</h2>
         <p class="detail-intro">A look at today, with a little planning for tomorrow.</p>
         <div class="preview-grid">
-          <article class="preview-card weather"><h3>Chiang Mai</h3><p>Current city</p><span class="empty-value">—</span><p>Current conditions and tomorrow’s forecast will appear here.</p></article>
-          <article class="preview-card weather"><h3>Yangon</h3><p>Hometown</p><span class="empty-value">—</span><p>Current conditions and tomorrow’s forecast will appear here.</p></article>
+          <article class="preview-card weather" aria-labelledby="cm-name">
+            <h3 id="cm-name">Chiang Mai</h3><p>Current city · Thailand</p>
+            <span id="cm-temperature" class="reading">—</span>
+            <p id="cm-condition">Current conditions</p>
+            <p id="cm-weather-stamp" class="small weather-stamp"></p>
+            <div class="forecast">
+              <h4>Tomorrow</h4><p id="cm-tomorrow-date" class="small"></p>
+              <p id="cm-tomorrow-condition">—</p>
+              <p id="cm-range" class="range">Low — · High —</p>
+              <p id="cm-rain">Rain chance: —</p>
+            </div>
+            <p id="cm-status" class="status" role="status"></p>
+          </article>
+          <article class="preview-card weather" aria-labelledby="yg-name">
+            <h3 id="yg-name">Yangon</h3><p>Hometown · Myanmar</p>
+            <span id="yg-temperature" class="reading">—</span>
+            <p id="yg-condition">Current conditions</p>
+            <p id="yg-weather-stamp" class="small weather-stamp"></p>
+            <div class="forecast">
+              <h4>Tomorrow</h4><p id="yg-tomorrow-date" class="small"></p>
+              <p id="yg-tomorrow-condition">—</p>
+              <p id="yg-range" class="range">Low — · High —</p>
+              <p id="yg-rain">Rain chance: —</p>
+            </div>
+            <p id="yg-status" class="status" role="status"></p>
+          </article>
         </div>
-        <p class="practice-note">This is the first practice version. We will connect weather data in the weather lesson.</p>
+        <div class="actions"><button id="refresh-weather" class="refresh">Refresh weather</button><span class="small">Checks every 15 minutes while this panel is open.</span></div>
+        <p class="practice-note">Weather by <a href="https://open-meteo.com/">Open-Meteo</a>. Current conditions are model estimates. Each forecast uses the city’s local date. Rain chance is the highest hourly precipitation probability tomorrow.</p>
       </section>
 
       <section id="time" class="view detail" aria-labelledby="time-title" hidden>
@@ -134,10 +176,10 @@
         <h2 id="time-title" tabindex="-1">Time</h2>
         <p class="detail-intro">Two places that matter, together on one screen.</p>
         <div class="preview-grid">
-          <article class="preview-card time"><h3>Chiang Mai</h3><p>Thailand</p><span class="empty-value">—</span><p>The Chiang Mai clock will appear here.</p></article>
-          <article class="preview-card time"><h3>Yangon</h3><p>Myanmar</p><span class="empty-value">—</span><p>The Yangon clock will appear here.</p></article>
+          <article class="preview-card time"><h3>Chiang Mai</h3><p>Thailand · UTC+7</p><time id="cm-clock" class="reading clock">—</time><p id="cm-date"></p></article>
+          <article class="preview-card time"><h3>Yangon</h3><p>Myanmar · UTC+6:30</p><time id="yg-clock" class="reading clock">—</time><p id="yg-date"></p></article>
         </div>
-        <p class="practice-note">Next practice step: add both clocks and make them update every second.</p>
+        <p class="practice-note">Chiang Mai is 30 minutes ahead of Yangon. Both clocks update every second using your device’s clock, so keep its time set automatically.</p>
       </section>
 
       <section id="currency" class="view detail" aria-labelledby="currency-title" hidden>
@@ -145,18 +187,54 @@
         <h2 id="currency-title" tabindex="-1">Currency</h2>
         <p class="detail-intro">Your four everyday conversions, in one place.</p>
         <div class="preview-card currency">
-          <div class="conversion"><span>1 USD → THB</span><span>—</span></div>
-          <div class="conversion"><span>1 USD → MMK</span><span>—</span></div>
-          <div class="conversion"><span>1,000 THB → MMK</span><span>—</span></div>
-          <div class="conversion"><span>100,000 MMK → THB</span><span>—</span></div>
+          <h3 class="rate-heading">Latest available rates</h3>
+          <p id="rates-updated" class="small">Waiting for exchange rates.</p>
+          <div class="conversion"><span>1 USD → THB</span><strong id="usd-thb">—</strong></div>
+          <div class="conversion"><span>1 USD → MMK</span><strong id="usd-mmk">—</strong></div>
+          <div class="conversion"><span>1,000 THB → MMK</span><strong id="thb-mmk">—</strong></div>
+          <div class="conversion"><span>100,000 MMK → THB</span><strong id="mmk-thb">—</strong></div>
         </div>
-        <p class="practice-note">We will add the exchange-rate connection and calculations in the currency lesson.</p>
+        <div class="actions"><button id="refresh-currency" class="refresh">Check rates</button><p id="currency-status" class="status" role="status"></p></div>
+        <p class="practice-note"><a href="https://www.exchangerate-api.com">Rates By Exchange Rate API</a> · Updated daily, rather than second by second. These are reference estimates before fees. MMK rates may differ from money changers and transfer services.</p>
       </section>
     </main>
-    <footer><span>A little closer to home.</span><span>Check Dash &nbsp;·&nbsp; First practice version</span></footer>
+    <footer><span>A little closer to home.</span><span>Weather &nbsp;·&nbsp; Time &nbsp;·&nbsp; Currency</span></footer>
   </div>
   <script>
-    // JavaScript makes the greeting, date, and navigation work.
+    // 1. CITY SETTINGS: fixed coordinates mean no location permission is needed.
+    const cities = [
+      { id: 'cm', name: 'Chiang Mai', latitude: 18.7883, longitude: 98.9853, zone: 'Asia/Bangkok' },
+      { id: 'yg', name: 'Yangon', latitude: 16.8409, longitude: 96.1735, zone: 'Asia/Yangon' }
+    ];
+    const MINUTE = 60 * 1000;
+    const HOUR = 60 * MINUTE;
+    const DAY = 24 * HOUR;
+    const weatherCache = {};
+    const weatherAttempts = {};
+    let weatherBusy = false;
+    let currencyBusy = false;
+    let currencyRetryAt = 0;
+
+    // A small helper writes plain text into an element with a matching HTML id.
+    function write(id, value) { document.getElementById(id).textContent = value; }
+    function status(id, message, isError = false) {
+      const element = document.getElementById(id);
+      element.textContent = message;
+      element.dataset.state = isError ? 'error' : 'normal';
+    }
+
+    // 2. TIME: Intl converts the device's time to each city's time zone.
+    cities.forEach(city => {
+      city.clockFormatter = new Intl.DateTimeFormat('en-GB', {
+        timeZone: city.zone, hour: '2-digit', minute: '2-digit', second: '2-digit', hourCycle: 'h23'
+      });
+      city.dateFormatter = new Intl.DateTimeFormat('en-GB', {
+        timeZone: city.zone, weekday: 'long', day: 'numeric', month: 'long', year: 'numeric'
+      });
+      city.calendarFormatter = new Intl.DateTimeFormat('en-GB', {
+        timeZone: city.zone, year: 'numeric', month: '2-digit', day: '2-digit'
+      });
+    });
     // Bangkok is the standard time-zone identifier for Chiang Mai's time zone.
     const greetingTimeZone = 'Asia/Bangkok';
     const hourFormatter = new Intl.DateTimeFormat('en-GB', {
@@ -176,7 +254,233 @@
       document.getElementById('today').textContent = dateFormatter.format(now);
     }
 
-    // Show only the selected section. The other sections stay hidden.
+    function updateClocks(now = new Date()) {
+      updateGreeting(now);
+      cities.forEach(city => {
+        write(city.id + '-clock', city.clockFormatter.format(now));
+        document.getElementById(city.id + '-clock').dateTime = now.toISOString();
+        write(city.id + '-date', city.dateFormatter.format(now));
+      });
+    }
+
+    // Find the city's calendar date, even when the viewer is in another country.
+    function cityDate(city, now = new Date()) {
+      const parts = city.calendarFormatter.formatToParts(now);
+      const get = type => parts.find(part => part.type === type).value;
+      return get('year') + '-' + get('month') + '-' + get('day');
+    }
+    function tomorrowDate(city, now = new Date()) {
+      const date = new Date(cityDate(city, now) + 'T00:00:00Z');
+      date.setUTCDate(date.getUTCDate() + 1);
+      return date.toISOString().slice(0, 10);
+    }
+    function readableDate(isoDate) {
+      return new Intl.DateTimeFormat('en-GB', {
+        timeZone: 'UTC', weekday: 'short', day: 'numeric', month: 'short', year: 'numeric'
+      }).format(new Date(isoDate + 'T00:00:00Z'));
+    }
+    function checkedTime(milliseconds) {
+      return new Intl.DateTimeFormat('en-GB', {
+        timeZone: 'Asia/Bangkok', day: 'numeric', month: 'short', year: 'numeric',
+        hour: '2-digit', minute: '2-digit', hourCycle: 'h23'
+      }).format(new Date(milliseconds)) + ' (Chiang Mai time)';
+    }
+
+    // 3. API REQUESTS: fetch asks an online service for data.
+    // response.json() reads its reply as a JavaScript object (JSON data).
+    // Neither of these public endpoints needs an API key or a credit card.
+    async function getJSON(url) {
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 12000);
+      try {
+        const response = await fetch(url, { signal: controller.signal, cache: 'no-store' });
+        if (!response.ok) {
+          const error = new Error('The data service could not complete the request.');
+          error.httpStatus = response.status;
+          throw error;
+        }
+        return await response.json();
+      } finally {
+        clearTimeout(timeout);
+      }
+    }
+
+    // 4. WEATHER: Open-Meteo returns a number describing each weather condition.
+    function weatherText(code) {
+      const descriptions = {
+        0: 'Clear sky', 1: 'Mainly clear', 2: 'Partly cloudy', 3: 'Overcast',
+        45: 'Fog', 48: 'Freezing fog', 51: 'Light drizzle', 53: 'Drizzle', 55: 'Heavy drizzle',
+        56: 'Light freezing drizzle', 57: 'Freezing drizzle',
+        61: 'Light rain', 63: 'Rain', 65: 'Heavy rain', 66: 'Light freezing rain', 67: 'Freezing rain',
+        71: 'Light snow', 73: 'Snow', 75: 'Heavy snow', 77: 'Snow grains',
+        80: 'Light rain showers', 81: 'Rain showers', 82: 'Heavy rain showers',
+        85: 'Snow showers', 86: 'Heavy snow showers', 95: 'Thunderstorm',
+        96: 'Thunderstorm with hail', 99: 'Thunderstorm with heavy hail'
+      };
+      return descriptions[code] || 'Conditions unavailable';
+    }
+    function temperature(value) {
+      return Number.isFinite(value) ? value.toFixed(1) + ' °C' : '—';
+    }
+    function validWeather(data) {
+      return data && Number.isFinite(data.current?.temperature_2m) &&
+        typeof data.current.time === 'string' &&
+        /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/.test(data.current.time) &&
+        Array.isArray(data.daily?.time);
+    }
+    function weatherURL(city) {
+      const parameters = new URLSearchParams({
+        latitude: city.latitude, longitude: city.longitude,
+        current: 'temperature_2m,weather_code',
+        daily: 'weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max',
+        timezone: city.zone, forecast_days: 3, temperature_unit: 'celsius'
+      });
+      return 'https://api.open-meteo.com/v1/forecast?' + parameters;
+    }
+    function renderWeather(city, data) {
+      const id = city.id;
+      const tomorrow = tomorrowDate(city);
+      write(id + '-tomorrow-date', readableDate(tomorrow));
+      write(id + '-temperature', temperature(data.current.temperature_2m));
+      write(id + '-condition', weatherText(data.current.weather_code));
+      // The API's time already belongs to this city; do not convert it again.
+      const [day, time] = data.current.time.split('T');
+      write(id + '-weather-stamp', 'Conditions for ' + readableDate(day) + ', ' + time + ' local time');
+
+      // Search by tomorrow's date instead of assuming it is always the second row.
+      const index = data.daily.time.indexOf(tomorrow);
+      const daily = data.daily;
+      write(id + '-tomorrow-condition', index < 0 ? 'Forecast unavailable. Please refresh.' : weatherText(daily.weather_code?.[index]));
+      write(id + '-range', 'Low ' + temperature(daily.temperature_2m_min?.[index]) + ' · High ' + temperature(daily.temperature_2m_max?.[index]));
+      const rain = daily.precipitation_probability_max?.[index];
+      write(id + '-rain', 'Rain chance: ' + (Number.isFinite(rain) ? Math.round(rain) + '%' : '—'));
+    }
+    async function loadCityWeather(city, force) {
+      const id = city.id;
+      const cached = weatherCache[id];
+      const now = Date.now();
+      write(id + '-tomorrow-date', readableDate(tomorrowDate(city)));
+      if (cached) renderWeather(city, cached.data);
+      const fresh = cached && now - cached.checkedAt < 15 * MINUTE &&
+        cached.data.current.time.slice(0, 10) === cityDate(city);
+      if (!force && fresh) return;
+      // A short pause prevents accidental repeated clicks from flooding the API.
+      if (now - (weatherAttempts[id] || 0) < MINUTE) {
+        status(id + '-status', (cached && !fresh ? 'Showing earlier weather. ' : '') + 'Please wait a minute before checking again.', Boolean(cached && !fresh));
+        return;
+      }
+      weatherAttempts[id] = now;
+      status(id + '-status', cached ? 'Checking for newer weather…' : 'Loading weather…');
+      try {
+        const data = await getJSON(weatherURL(city));
+        if (!validWeather(data)) throw new Error('Incomplete weather response');
+        weatherCache[id] = { data, checkedAt: Date.now() };
+        renderWeather(city, data);
+        status(id + '-status', 'Weather loaded.');
+      } catch (error) {
+        const retry = error.httpStatus === 429 ? 'The service is busy. Try again later.' : 'Check your connection and try Refresh weather.';
+        status(id + '-status', (cached ? 'Could not update; showing earlier weather. ' : 'Weather unavailable. ') + retry, true);
+      }
+    }
+    async function loadWeather(force = false) {
+      if (weatherBusy) return;
+      weatherBusy = true;
+      const button = document.getElementById('refresh-weather');
+      button.disabled = true;
+      try {
+        // Both cities load independently, so one can work if the other fails.
+        await Promise.all(cities.map(city => loadCityWeather(city, force)));
+      } finally {
+        weatherBusy = false;
+        button.disabled = false;
+      }
+    }
+
+    // 5. CURRENCY: one response contains all rates relative to 1 US dollar.
+    const CURRENCY_CACHE_KEY = 'check-dash-usd-rates-v1';
+    function validRates(data) {
+      return data?.result === 'success' && data.base_code === 'USD' &&
+        Number.isFinite(data.rates?.THB) && data.rates.THB > 0 &&
+        Number.isFinite(data.rates?.MMK) && data.rates.MMK > 0 &&
+        Number.isFinite(data.time_last_update_unix) && data.time_last_update_unix > 0;
+    }
+    function readSavedRates() {
+      try {
+        const saved = JSON.parse(localStorage.getItem(CURRENCY_CACHE_KEY));
+        if (validRates(saved?.data) && Number.isFinite(saved.checkedAt) &&
+            saved.checkedAt <= Date.now()) return saved;
+      } catch (error) {
+        // The app still works when browser storage is blocked or empty.
+      }
+      return null;
+    }
+    let currencyCache = readSavedRates();
+    const amountFormatter = new Intl.NumberFormat('en-US', {
+      minimumFractionDigits: 2, maximumFractionDigits: 2
+    });
+    function currencyAmounts(rates) {
+      return {
+        usdThb: rates.THB,
+        usdMmk: rates.MMK,
+        // Divide by THB per dollar to get USD, then multiply by MMK per dollar.
+        thbMmk: 1000 / rates.THB * rates.MMK,
+        // Do the reverse conversion for 100,000 Myanmar kyat.
+        mmkThb: 100000 / rates.MMK * rates.THB
+      };
+    }
+    function renderCurrency(data) {
+      const values = currencyAmounts(data.rates);
+      write('usd-thb', amountFormatter.format(values.usdThb) + ' THB');
+      write('usd-mmk', amountFormatter.format(values.usdMmk) + ' MMK');
+      write('thb-mmk', amountFormatter.format(values.thbMmk) + ' MMK');
+      write('mmk-thb', amountFormatter.format(values.mmkThb) + ' THB');
+      write('rates-updated', 'Provider update: ' + checkedTime(data.time_last_update_unix * 1000));
+    }
+    function ratesAreFresh(cached) {
+      if (!cached) return false;
+      // Reuse data for up to an hour, or until the provider's next scheduled update.
+      const nextUpdate = cached.data.time_next_update_unix * 1000;
+      let expiresAt = cached.checkedAt + HOUR;
+      if (nextUpdate > cached.checkedAt) expiresAt = Math.min(expiresAt, nextUpdate);
+      return Date.now() < expiresAt;
+    }
+    function showRateStatus() {
+      const old = Date.now() - currencyCache.data.time_last_update_unix * 1000 > 2 * DAY;
+      status('currency-status', old ? 'The provider’s latest rates are over two days old.' :
+        'Last checked: ' + checkedTime(currencyCache.checkedAt) + '. Reuses rates for up to an hour.', old);
+    }
+    async function loadCurrency() {
+      if (currencyBusy) return;
+      if (currencyCache) renderCurrency(currencyCache.data);
+      if (ratesAreFresh(currencyCache)) {
+        showRateStatus();
+        return;
+      }
+      if (Date.now() < currencyRetryAt) return;
+      currencyBusy = true;
+      const button = document.getElementById('refresh-currency');
+      button.disabled = true;
+      status('currency-status', currencyCache ? 'Checking for newer rates…' : 'Loading exchange rates…');
+      try {
+        const data = await getJSON('https://open.er-api.com/v6/latest/USD');
+        if (!validRates(data)) throw new Error('Incomplete exchange-rate response');
+        currencyCache = { data, checkedAt: Date.now() };
+        // Save the reply, so opening the page again does not waste API requests.
+        try { localStorage.setItem(CURRENCY_CACHE_KEY, JSON.stringify(currencyCache)); } catch (error) { /* Storage is optional. */ }
+        renderCurrency(data);
+        showRateStatus();
+      } catch (error) {
+        const limited = error.httpStatus === 429;
+        currencyRetryAt = Date.now() + (limited ? 20 * MINUTE : MINUTE);
+        const retry = limited ? 'Too many requests. Try again in 20 minutes.' : 'Check your connection, then try again in a minute.';
+        status('currency-status', (currencyCache ? 'Could not update; showing saved rates. ' : 'Rates unavailable. ') + retry, true);
+      } finally {
+        currencyBusy = false;
+        button.disabled = false;
+      }
+    }
+
+    // 6. NAVIGATION: load data only when its panel is opened.
     let lastFeature = 'weather';
     function showView(viewName) {
       const selectedView = document.getElementById(viewName);
@@ -191,6 +495,9 @@
         selectedView.querySelector('h2').focus({ preventScroll: true });
       }
       window.scrollTo(0, 0);
+      if (viewName === 'weather') loadWeather();
+      if (viewName === 'currency') loadCurrency();
+      if (viewName === 'time') updateClocks();
     }
 
     // Read each button's data-view value when it is clicked.
@@ -198,11 +505,23 @@
       button.addEventListener('click', () => showView(button.dataset.view));
     });
 
-    updateGreeting();
-    // Keep the greeting and date correct if the page stays open past noon or midnight.
-    setInterval(updateGreeting, 1000);
+    document.getElementById('refresh-weather').addEventListener('click', () => loadWeather(true));
+    document.getElementById('refresh-currency').addEventListener('click', () => loadCurrency());
+
+    // Clocks tick every second. API checks run much less often to respect free limits.
+    updateClocks();
+    setInterval(updateClocks, 1000);
+    function refreshVisibleData() {
+      if (document.hidden) return;
+      if (!document.getElementById('weather').hidden) loadWeather();
+      if (!document.getElementById('currency').hidden) loadCurrency();
+    }
+    setInterval(refreshVisibleData, MINUTE);
     document.addEventListener('visibilitychange', () => {
-      if (!document.hidden) updateGreeting();
+      if (!document.hidden) {
+        updateClocks();
+        refreshVisibleData();
+      }
     });
   </script>
 </body>
