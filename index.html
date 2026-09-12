@@ -32,7 +32,7 @@
     .hero { display: flex; align-items: center; justify-content: space-between; gap: 30px; padding: 65px 0 44px; }
     .eyebrow { margin: 0 0 17px; font-size: 12px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; }
     h1 { margin: 0; font-size: clamp(42px, 6.3vw, 76px); line-height: 1.05; letter-spacing: -3.5px; font-weight: 500; }
-    .date { margin: 23px 0 0; font-size: 18px; line-height: 1.5; }
+    .date { margin: 23px 0 0; font-size: 18px; line-height: 1.2; }
     .timezone { margin: 7px 0 0; color: var(--muted); font-size: 13px; }
 
     /* Circle photo: SEA.svg must be beside index.html. */
@@ -150,6 +150,7 @@
       <section id="home" class="view" aria-labelledby="greeting">
         <div class="hero">
           <div>
+            <p class="eyebrow">Your daily check-in Sane</p>
             <h1 id="greeting" tabindex="-1">Welcome Sane</h1>
             <p id="today" class="date"></p>
           </div>
