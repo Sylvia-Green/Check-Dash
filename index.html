@@ -90,6 +90,17 @@
       .preview-card { padding: 23px; }
       .conversion { font-size: 17px; }
       footer { margin-top: 34px; flex-direction: column; gap: 5px; }
+      .sun-art {
+    background-image: url("./SEA.svg");
+    background-size: cover;
+    background-position: center;
+      }
+
+    /* Hide the yellow sun and its small orange dot. */
+    .sun-art::before,
+    .sun-art::after {
+      display: none;
+    }
     }
     @media (prefers-reduced-motion: reduce) { .card { transition: none; } .card:hover { transform: none; } }
   </style>
